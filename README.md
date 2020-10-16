@@ -16,6 +16,10 @@ Other Requirements:<br />
 -DISCORD_CHANN=(the channel ID with pinned messages here)<br />
 -GOOGLES_TOKEN=(the google sheets ID here)<br />
 -RANGNAM_STRIN=(the range of the sheets here)<br />
-<br />The range of the sheets is still hardcoded in, an example is left in the '.env' file to see<br />
-'A2:B.A:F'<br /> 'A2:B' means starting from column A row 2, checking all the way to the bottom for only columns A and B
+<br />The range of the sheets is still hardcoded in, since this was made for a specific spreadsheet with specific columns, rows are automatically handled.<br />
+Since rows are automatically handled you only need to change the code in functions:<br />
+-'value_assignment(values)', where it reads through the messages and creates a list of 6 items/columns which is stored in the values list<br />
+-'update_sheet(service)', where it calls 'value_assignment()' for writing to spreadsheet<br /><br />
+An example is put below and within the '.env' file:<br />
+'A2:B.A:F'<br /><br /> 'A2:B' means starting from column A row 2, checking all the way to the bottom for only columns A and B
 <br /> '.' Splits 'A2:B' from 'A:F', and 'A:F' means starting at the first empty row input data in columns A to F for each new row inputted
