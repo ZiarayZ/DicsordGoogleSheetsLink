@@ -46,7 +46,9 @@ def value_assignment(values):
         #name
         two_parts = message.split(': ')
         if two_parts[1][0] == '>':
-            two_parts[1] = two_parts[1][1:]
+            two_parts[1] = two_parts[1][2:]
+        if '>' in two_parts[1]:
+            two_parts[1] = two_parts[1].replace('\n> ','\n')
         characterRemove = False
         charPhrase = []
         charCounter = -1
@@ -64,9 +66,9 @@ def value_assignment(values):
         values.append([two_parts[0]])
 
         #gender checking
-        if re.findall('(?:female|Female|Girl|girl|woman|Woman)', two_parts[1]):#female check
+        if re.findall('(?:female|Female|Girl|girl|woman|Woman|lady|Lady)', two_parts[1]):#female check
             values[counter].append("F")#gender
-        elif re.findall('(?:male|Male|Boy|boy|Boi|boi|man|Man)', two_parts[1]):#male check
+        elif re.findall('(?:male|Male|Boy|boy|Boi|boi|guy|Guy)', two_parts[1]):#male check
             values[counter].append("M")#gender
         else:#No gender
             values[counter].append(None)#gender
@@ -95,27 +97,30 @@ def value_assignment(values):
             values[counter].append(None)#age
 
         #country checking
-        if 'from' in two_parts[1].lower():
-            third_part = two_parts[1].lower().split('from ')[1]#splits first part of message off
+        if 'living in' in two_parts[1].lower():
+            third_part = two_parts[1].lower().split('living in ')[1]#splits first part of message off
             country = third_part.split(' ')#Splitting rest of message
             if country[0].lower() == 'the':
-                country = country[1]
-            country = country.upper()#capitalize location name
+                country = country[1].upper()
+            else:
+                country = country[0].upper()#capitalize location name
+            values[counter].append(country)#country
+        elif 'live in' in two_parts[1].lower():
+            third_part = two_parts[1].lower().split('live in ')[1]#splits first part of message off
+            country = third_part.split(' ')#Splitting rest of message
+            if country[0].lower() == 'the':
+                country = country[1].upper()
+            else:
+                country = country[0].upper()#capitalize location name
             values[counter].append(country)#country
         else:
-            if 'living in' in two_parts[1].lower():
-                third_part = two_parts[1].lower().split('living in ')[1]#splits first part of message off
+            if 'from' in two_parts[1].lower():
+                third_part = two_parts[1].lower().split('from ')[1]#splits first part of message off
                 country = third_part.split(' ')#Splitting rest of message
                 if country[0].lower() == 'the':
-                    country = country[1]
-                country = country.upper()#capitalize location name
-                values[counter].append(country)#country
-            elif 'live in' in two_parts[1].lower():
-                third_part = two_parts[1].lower().split('live in ')[1]#splits first part of message off
-                country = third_part.split(' ')#Splitting rest of message
-                if country[0].lower() == 'the':
-                    country = country[1]
-                country = country.upper()#capitalize location name
+                    country = country[1].upper()
+                else:
+                    country = country[0].upper()#capitalize location name
                 values[counter].append(country)#country
             else:
                 values[counter].append(None)#country
@@ -135,6 +140,10 @@ def value_assignment(values):
             height1.append(hei)
         height2 = re.findall('(\d)\'(\d+)', two_parts_revision1)#feet
         for hei in re.findall('(\d)\’(\d+)', two_parts_revision1):#feet
+            height2.append(hei)
+        for hei in re.findall('(\d)\"(\d+)', two_parts_revision1):#feet
+            height2.append(hei)
+        for hei in re.findall('(\d)\,(\d+)', two_parts_revision1):#feet
             height2.append(hei)
         if len(height) > 0:
             values[counter].append(int(height[0]))
@@ -187,6 +196,7 @@ async def on_message(ctx):
                     await message.unpin()
                 else:
                     print('pinned message is by moderator/admin, without a mention')
+            await ctx.channel.send('Spreadsheet updated')
             await client.logout()
         #add a new admin to txt file list of admins
         if len(ctx.mentions) > 0 and ctx.mentions[0].id not in Admins:
