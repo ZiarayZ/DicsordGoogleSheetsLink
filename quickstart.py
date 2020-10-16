@@ -47,20 +47,45 @@ def value_assignment(values):
         two_parts = message.split(': ')
         if two_parts[1][0] == '>':
             two_parts[1] = two_parts[1][1:]
+        characterRemove = False
+        charPhrase = []
+        charCounter = -1
+        for character in two_parts[1]:
+            if character == '<' and '>' in two_parts[1]:
+                characterRemove = True
+                charPhrase.append('')
+                charCounter += 1
+            if characterRemove:
+                charPhrase[charCounter] += character
+            if character == '>':
+                characterRemove = False
+        for character in charPhrase:
+            two_parts[1] = two_parts[1].replace(character, '')
         values.append([two_parts[0]])
 
         #gender checking
-        if re.findall('(?:female|Female|Girl|girl|f|F)', two_parts[1]):#female check
+        if re.findall('(?:female|Female|Girl|girl|woman|Woman)', two_parts[1]):#female check
             values[counter].append("F")#gender
-        elif re.findall('(?:male|Male|Boy|boy|Boi|boi|m|M)', two_parts[1]):#male check
+        elif re.findall('(?:male|Male|Boy|boy|Boi|boi|man|Man)', two_parts[1]):#male check
             values[counter].append("M")#gender
         else:#No gender
             values[counter].append(None)#gender
 
         #age checking
-        two_parts_revision1 = re.sub('(?:\d\d\d)', '', two_parts[1])
-        two_parts_revision2 = re.sub('(\\d+)\'(\\d+)', '', two_parts_revision1)
-        age = re.findall('(?:9[0-9]|[1-8][0-9]|[1-9])', two_parts_revision2)
+        two_parts_revision1 = re.sub(r'http\S+', '', two_parts[1])
+        two_parts_revision1 = re.sub('(?:250|2[0-4][0-9]|1[0-9]{2})', '', two_parts_revision1)
+        two_parts_revision1 = re.sub('(?:2\.50|2\.[0-4][0-9]|1\.[0-9]{2})', '', two_parts_revision1)
+        two_parts_revision1 = re.sub('(?:2\.5|2\.[0-4]|1\.[0-9])', '', two_parts_revision1)
+        two_parts_revision1 = re.sub('(?:2\,50|2\,[0-4][0-9]|1\,[0-9]{2})', '', two_parts_revision1)
+        two_parts_revision1 = re.sub('(?:2\,5|2\,[0-4]|1\,[0-9])', '', two_parts_revision1)
+        two_parts_revision1 = re.sub('(\d\'\d+)', '', two_parts_revision1)
+        two_parts_revision1 = re.sub('(\d\’\d+)', '', two_parts_revision1)
+        two_parts_revision1 = re.sub('(...kg)', '', two_parts_revision1)
+        two_parts_revision1 = re.sub('(\.\d+)', '', two_parts_revision1)
+        two_parts_revision1 = re.sub('(27[5-9]|2[89][0-9]|[3-9][0-9]{2})', '', two_parts_revision1)
+        two_parts_revision1 = re.sub('(\d{4,9})', '', two_parts_revision1)
+
+        age = re.findall('(?:[1-9][0-9])', two_parts_revision1)
         if age:
             try:
                 values[counter].append(int(age[1]))#checks if there's a second age, sometimes people say "mentally 18, physically 25" we want the second option not the first
@@ -70,22 +95,53 @@ def value_assignment(values):
             values[counter].append(None)#age
 
         #country checking
-        if "from" in two_parts[1].lower():
-            third_part = two_parts[1].lower().split("from ")[1]#splits first part of message off
-            country = third_part.split(" ")[0]#Splitting rest of message off
+        if 'from' in two_parts[1].lower():
+            third_part = two_parts[1].lower().split('from ')[1]#splits first part of message off
+            country = third_part.split(' ')#Splitting rest of message
+            if country[0].lower() == 'the':
+                country = country[1]
             country = country.upper()#capitalize location name
             values[counter].append(country)#country
         else:
-            values[counter].append(None)#country
+            if 'living in' in two_parts[1].lower():
+                third_part = two_parts[1].lower().split('living in ')[1]#splits first part of message off
+                country = third_part.split(' ')#Splitting rest of message
+                if country[0].lower() == 'the':
+                    country = country[1]
+                country = country.upper()#capitalize location name
+                values[counter].append(country)#country
+            elif 'live in' in two_parts[1].lower():
+                third_part = two_parts[1].lower().split('live in ')[1]#splits first part of message off
+                country = third_part.split(' ')#Splitting rest of message
+                if country[0].lower() == 'the':
+                    country = country[1]
+                country = country.upper()#capitalize location name
+                values[counter].append(country)#country
+            else:
+                values[counter].append(None)#country
 
         #height checking
-        height = re.findall('(?:250|2[0-4][0-9]|1[0-9]{2})', two_parts[1])#cm
-        height1 = re.findall('(?:2.50|2.[0-4][0-9]|1.[0-9]{2})', two_parts[1])#m
-        height2 = re.findall('(\\d+)\'(\\d+)', two_parts[1])#feet
+        two_parts_revision1 = re.sub(r'http\S+', '', two_parts[1])
+        two_parts_revision1 = re.sub('(...kg)', '', two_parts_revision1)
+        two_parts_revision1 = re.sub('(27[5-9]|2[89][0-9]|[3-9][0-9]{2})', '', two_parts_revision1)
+        two_parts_revision1 = re.sub('(\d{4,9})', '', two_parts_revision1)
+        height = re.findall('(?:250|2[0-4][0-9]|1[0-9]{2})', two_parts_revision1)#cm
+        height1 = re.findall('(?:2\.50|2\.[0-4][0-9]|1\.[0-9]{2})', two_parts_revision1)#m
+        for hei in re.findall('(?:2\,50|2\,[0-4][0-9]|1\,[0-9]{2})', two_parts_revision1):#m
+            height1.append(hei)
+        for hei in re.findall('(?:2\.5|2\.[0-4]|1\.[0-9])', two_parts_revision1):#m
+            height1.append(hei)
+        for hei in re.findall('(?:2\,5|2\,[0-4]|1\,[0-9])', two_parts_revision1):#m
+            height1.append(hei)
+        height2 = re.findall('(\d)\'(\d+)', two_parts_revision1)#feet
+        for hei in re.findall('(\d)\’(\d+)', two_parts_revision1):#feet
+            height2.append(hei)
         if len(height) > 0:
             values[counter].append(int(height[0]))
         elif len(height1) > 0:
             height1 = height1[0][0] + height1[0][2:]
+            if int(height1) < 100:
+                height1 = height1 + '0'
             values[counter].append(int(height1))
         elif len(height2) > 0:
             convert = int((int(height2[0][0]) + (int(height2[0][1]) / 12))* 30.48)
@@ -96,10 +152,6 @@ def value_assignment(values):
         #Rest of message
         values[counter].append(two_parts[1])
         counter += 1
-        try:
-            print(values[counter])
-        except:
-            print("unsupported character detected in this row")
     return values
 
 #letting you know that the bot has come online and it's in these servers
@@ -116,16 +168,16 @@ async def on_message(ctx):
     global messages
     global channelID
     global Admins
-    if 'ctx.execute(' == ctx.content[0:12] and ctx.content[-1] == ')':
+    if 'ctx.execute(' == ctx.content[0:12] and ctx.content[-1] == ')' and ctx.channel.id == CHANN:
         phrase = ctx.content[12:]
         phrase = phrase[:-1]
-        if ctx.channel.id == CHANN and phrase == 'order=66':
-            #pulls all message objects from channel CHANN's pinned messages
+        if phrase == 'order=66':
+        #pulls all message objects from channel CHANN's pinned messages
             message_objects = await client.get_channel(CHANN).pins()
             for message in message_objects:
                 #checks if message is from me, or is from a moderator/admin
                 if message.author.id != ADMIN and message.author.id not in Admins:
-                    messages.append(str(message.author.display_name)+': '+str(message.content).rstrip())
+                    messages.append(str(message.author.display_name)+': '+str(message.clean_content).rstrip())
                     await message.unpin()
                 #if from moderator/admin, will use the last mention as the user's name
                 elif message.author.id in Admins and len(message.mentions) > 0:
@@ -137,7 +189,7 @@ async def on_message(ctx):
                     print('pinned message is by moderator/admin, without a mention')
             await client.logout()
         #add a new admin to txt file list of admins
-        if ctx.channel.id == CHANN and len(ctx.mentions) > 0 and ctx.mentions[0].id not in Admins:
+        if len(ctx.mentions) > 0 and ctx.mentions[0].id not in Admins:
             Admins.append(ctx.mentions[0].id)
             with open('admins.txt', 'a') as f:
                 f.write('\n' + str(ctx.mentions[0].id))
@@ -145,6 +197,7 @@ async def on_message(ctx):
 
 #my function for updating sheets
 def update_sheet(service):
+    global range_name
     values = value_assignment([
         
             # Cell values ...
