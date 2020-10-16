@@ -3,7 +3,7 @@ Reads a channel's pinned messages and puts them into a google sheets document.<b
 The mods in one of my discord servers used to manually input people's introductions into a GDrive spreadsheet, i decided to make a script which does this automatically for them.<br />
 <br />
 Python Requirements:<br />
--Python (version 3.6 was tested/used)<br />
+-Python v3.6<br />
 -Google Sheets API v4<br />
 -Discord.py API v1.5.0<br />
 -dotenv library v0.14.0<br /><br />
