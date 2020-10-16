@@ -102,13 +102,15 @@ def value_assignment(values):
             print("unsupported character detected in this row")
     return values
 
+#letting you know that the bot has come online and it's in these servers
 @client.event
 async def on_ready():
-    print('Bot initialised')
+    print('Bot initialised in:')
     for guild in client.guilds:
         print(f'NAME: {guild}, (ID: {guild.id})')
     
 
+#moved code out of on_ready, so we can add more moderators/admins to txt file from discord
 @client.event
 async def on_message(ctx):
     global messages
@@ -117,7 +119,7 @@ async def on_message(ctx):
     if 'ctx.execute(' == ctx.content[0:12] and ctx.content[-1] == ')':
         phrase = ctx.content[12:]
         phrase = phrase[:-1]
-        if phrase == 'order=66' and ctx.channel.id == CHANN:
+        if ctx.channel.id == CHANN and phrase == 'order=66':
             #pulls all message objects from channel CHANN's pinned messages
             message_objects = await client.get_channel(CHANN).pins()
             for message in message_objects:
@@ -135,12 +137,39 @@ async def on_message(ctx):
                     print('pinned message is by moderator/admin, without a mention')
             await client.logout()
         #add a new admin to txt file list of admins
-        if len(ctx.mentions) > 0 and ctx.mentions[0].id not in Admins:
+        if ctx.channel.id == CHANN and len(ctx.mentions) > 0 and ctx.mentions[0].id not in Admins:
             Admins.append(ctx.mentions[0].id)
             with open('admins.txt', 'a') as f:
                 f.write('\n' + str(ctx.mentions[0].id))
                 f.close()
 
+#my function for updating sheets
+def update_sheet(service):
+    values = value_assignment([
+        
+            # Cell values ...
+        
+        # Additional rows ...
+    ])
+
+    #gets all data and gets all rows
+    range_names = range_name.split('.')
+    rows = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=range_names[0]).execute().get('values', [])
+
+    #gets last row
+    new_row_id = len(rows) + 2
+    range_name = range_names[1][0] + str(new_row_id) + range_names[1][1:]
+
+    body = {
+        'values': values
+    }
+    result = service.spreadsheets().values().update(
+        spreadsheetId=spreadsheet_id, range=range_name,
+        valueInputOption='USER_ENTERED', body=body).execute()
+    print('{0} cells updated.'.format(result.get('updatedCells')))
+
+
+#Google's authorization code
 def main():
     global range_name
     #Shows basic usage of the Sheets API.
@@ -165,31 +194,10 @@ def main():
         with open('token.pickle', 'wb') as token:
             pickle.dump(creds, token)
 
+    #my code here
     service = build('sheets', 'v4', credentials=creds)
-
-    values = value_assignment([
-        
-            # Cell values ...
-        
-        # Additional rows ...
-    ])
-
-    #gets all data and gets all rows
-    range_names = range_name.split('.')
-    rows = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=range_names[0]).execute().get('values', [])
-
-    #gets last row
-    new_row_id = len(rows) + 2
-    range_name = range_names[1][0] + str(new_row_id) + range_names[1][1:]
-
-    body = {
-        'values': values
-    }
-    result = service.spreadsheets().values().update(
-        spreadsheetId=spreadsheet_id, range=range_name,
-        valueInputOption='USER_ENTERED', body=body).execute()
-    print('{0} cells updated.'.format(result.get('updatedCells')))
+    update_sheet(service)
 
 if __name__ == '__main__':
-    client.run(TOKEN)
-    main()
+    client.run(TOKEN)#run bot pulling from pins
+    main()#look through stored messages and input into spreadsheet
