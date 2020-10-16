@@ -22,4 +22,5 @@ Since rows are automatically handled you only need to change the code in functio
 -'update_sheet(service)', where it calls 'value_assignment()' for writing to spreadsheet<br /><br />
 An example is put below and within the '.env' file:<br />
 'A2:B.A:F'<br /><br /> 'A2:B' means starting from column A row 2, checking all the way to the bottom for only columns A and B
-<br /> '.' Splits 'A2:B' from 'A:F', and 'A:F' means starting at the first empty row input data in columns A to F for each new row inputted
+<br /> '.' Splits 'A2:B' from 'A:F'<br />
+'A:F' means starting at the first empty row input data in columns A to F for each new row inputted
