@@ -5,7 +5,8 @@ The discord server's mods used to manually input people's introductions into a s
 Python Requirements:<br />
 -Python (version 3.6 was tested/used)<br />
 -Google Sheets API v4<br />
--Discord.py API v1.5.0<br /><br />
+-Discord.py API v1.5.0<br />
+-dotenv library v0.14.0<br /><br />
 Other Requirements:<br />
 -Fill 'admins.txt' with user IDs (these user IDs are of the admins or mods so it knows to ignore them)<br />
 -Make sure each user ID in 'admins.txt' is on a new line (otherwise it won't work, it reads a full line for an ID)<br />
